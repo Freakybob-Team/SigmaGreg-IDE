@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SigmaGreg Code</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/editor/editor.main.css" rel="stylesheet">
+    <meta name="description" content="SigmaGreg Code">
+    <meta name="keywords" content="SigmaGreg, SigmaGreg Code, SigmaGreg Code Editor">
+    <meta name="author" content="Freakybob Team">
+    <link rel="icon" type="image/x-icon" href="assets/dkffe.png">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #0f1010;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #sidebar {
+            width: 200px;
+            background-color: #371141;
+            color: #16d0e4;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #00e1ff;
+        }
+
+        #sidebar h3 {
+            margin: 0;
+            padding: 10px;
+            background-color: #114c7a86;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        #sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        #sidebar ul li {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #sidebar ul li:hover {
+            background-color: #65065d;
+        }
+
+        #menu-bar {
+            height: 30px;
+            background-color: #3fb1b375;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        #menu-bar span {
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        #menu-bar select {
+            background-color: transparent;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #editor-container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #editor {
+            flex-grow: 1;
+        }
+
+        #status-bar {
+            height: 24px;
+            background-color: #26a74263;
+            color: #d4d4d4;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            justify-content: space-between;
+        }
+
+        #status-bar span {
+            font-size: 12px;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #371141;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: #16d0e4;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #65065d;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        #clock {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            color: #16d0e4;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        #popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fade-in 1s forwards;
+}
+
+#popup-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+    </style>
+</head>
+<body>
+    <div id="popup" style="display: none;">
+        <div id="popup-content">
+            <p id="popup-message"></p>
+            <p>Time remaining: <span id="popup-timer"></span></p>
+        </div>
+    </div>
+    
+    <div id="sidebar">
+        <h3>Explorer</h3>
+        <ul>
+            <li data-file="Main.sigmag">Main.sig</li>
+            <a href="https://github.com/Freakybob-Team/SigmaGreg/blob/main/main.cpp" style="text-decoration: none; color: #16d0e4;"><li data-file="main.cpp">Main.cpp</li></a>
+            <li data-file="README.md">README.md</li>
+        </ul>
+    </div>
+    <div id="editor-container">
+        <div id="menu-bar">
+            <div class="dropdown">
+                <span>File</span>
+                <div class="dropdown-content">
+                    <a href="#" id="saveFile">Save</a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <span>Help</span>
+                <div class="dropdown-content">
+                    <a href="#">Documentation</a>
+                </div>
+            </div>
+        </div>
+        <div id="editor"></div>
+        <div id="status-bar">
+            <span>Ln 1, Col 1</span>
+        </div>
+        <div id="clock"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js"></script>
+    <script>
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs' } });
+
+        require(['vs/editor/editor.main'], function () {
+            monaco.languages.register({ id: 'sigmag' });
+            monaco.languages.setMonarchTokensProvider('sigmag', {
+                tokenizer: {
+                    root: [
+                        [/\b(gregPr|gregIn|gregMa|gregINT|gregSTRING|gregDOUBLE|gregWRITE|gregRUN|gregType|gregRandom|gregPrintAll)\b/, 'builtin'],
+                        [/"[^"]*"/, 'string'],
+                        [/\b\d+(\.\d+)?\b/, 'number'],
+                        [/[a-zA-Z_][a-zA-Z0-9_]*/, 'identifier'],
+                        [/\/\/.*$/, 'comment'],
+                    ],
+                },
+            });
+
+            monaco.editor.defineTheme('sigmagTheme', {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: 'builtin', foreground: '569cd6' },
+                    { token: 'string', foreground: 'ce9178' },
+                    { token: 'number', foreground: 'b5cea8' },
+                    { token: 'comment', foreground: '6a9955', fontStyle: 'italic' },
+                    { token: 'identifier', foreground: 'dcdcaa' },
+                ],
+                colors: {
+                    'editor.background': '#193333',
+                },
+            });
+
+            const editor = monaco.editor.create(document.getElementById('editor'), {
+                value: localStorage.getItem('content') || `gregPr "Hello, World!";\nend\n`,
+                language: localStorage.getItem('language') || 'sigmag',
+                theme: localStorage.getItem('theme') || 'sigmagTheme',
+                fontSize: 14,
+                automaticLayout: true,
+            });
+
+            editor.onDidChangeCursorPosition(e => {
+                const position = editor.getPosition();
+                document.querySelector('#status-bar span').textContent = `Ln ${position.lineNumber}, Col ${position.column}`;
+            });
+
+            document.querySelectorAll('#sidebar ul li').forEach(item => {
+                item.addEventListener('click', () => {
+                    const fileName = item.getAttribute('data-file');
+                    loadFileContent(fileName);
+                });
+            });
+
+            document.getElementById('saveFile').addEventListener('click', () => {
+                localStorage.setItem('content', editor.getValue());
+                localStorage.setItem('language', editor.getModel().getLanguageIdentifier().id);
+                localStorage.setItem('theme', editor.getTheme());
+            });
+
+            function loadFileContent(fileName) {
+                let content = '';
+                let language = '';
+                if (fileName === 'Main.sigmag') {
+                    content = `gregPr "Hello, World!";\nend\n`;
+                    language = 'sigmag';
+                } else if (fileName === 'README.md') {
+                    content = `# Welcome to the SigmaG coding website!!! Here, you'll be able to write your code !!!\n`;
+                    language = 'markdown';
+                }
+                editor.setValue(content);
+                editor.setModelLanguage(editor.getModel(), language);
+            }
+
+            let seconds = 0;
+            function updateStopwatch() {
+                seconds++;
+                const hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
+                const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+                const secs = (seconds % 60).toString().padStart(2, '0');
+                document.getElementById('clock').textContent = `${hrs}:${mins}:${secs}`;
+            }
+
+            setInterval(updateStopwatch, 1000);
+            updateStopwatch();
+        });
+        document.addEventListener('DOMContentLoaded', () => {
+    const messages = [
+        "Take a break; sometimes it isn't healthy to have a mental breakdown over SigmaGreg.",
+        "These popups aren't really encouraging, so I'll tell you right now this code is more secure than Bopimo.",
+    ];
+
+    const popup = document.getElementById('popup');
+    const popupMessage = document.getElementById('popup-message');
+    const popupTimer = document.getElementById('popup-timer');
+    const breakDuration = 6 * 60;
+    let popupEndTime = localStorage.getItem('popupEndTime') || 0;
+    const hourInMilliseconds = 60 * 60 * 1000;
+
+    function updatePopupTimer() {
+        const remaining = popupEndTime - Date.now();
+        if (remaining <= 0) {
+            popup.style.display = 'none';
+            localStorage.removeItem('popupEndTime');
+        } else {
+            const mins = Math.floor(remaining / 60000).toString().padStart(2, '0');
+            const secs = Math.floor((remaining % 60000) / 1000).toString().padStart(2, '0');
+            popupTimer.textContent = `${mins}:${secs}`;
+        }
+    }
+
+    function showPopup() {
+        const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+        localStorage.setItem('popupMessage', randomMessage);
+        popupMessage.textContent = localStorage.getItem('popupMessage');
+        popup.style.display = 'flex';
+
+        popupEndTime = Date.now() + breakDuration * 1000;
+        localStorage.setItem('popupEndTime', popupEndTime);
+
+        setInterval(updatePopupTimer, 1000);
+        updatePopupTimer();
+    }
+
+    function checkPopupInterval() {
+        const lastPopupTime = localStorage.getItem('lastPopupTime');
+        const currentTime = Date.now();
+
+        if (!lastPopupTime || currentTime - lastPopupTime >= hourInMilliseconds) {
+            showPopup();
+            localStorage.setItem('lastPopupTime', currentTime);
+        }
+    }
+
+    checkPopupInterval();
+    setInterval(checkPopupInterval, hourInMilliseconds);
+});
+
+
+
+
+
+    </script>
+</body>
+</html>

@@ -389,9 +389,9 @@ require(['vs/editor/editor.main'], function () {
         if (activeFile) {
             files[activeFile] = editor.getValue();
             saveFiles();
-            alert('File saved locally!');
+            alert('Saved ${filename}?!');
         } else {
-            alert('No file selected to save!');
+            alert('No file selected to save...');
         }
     });
 

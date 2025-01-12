@@ -150,27 +150,6 @@ SOFTWARE. -->
             display: block;
         }
 
-/*        .aboutdropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #371141;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-}
-.aboutdropdown-content a {
-    color: #16d0e4;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-}
-.aboutdropdown-content a:hover {
-    background-color: #65065d;
-}
-.dropdown:hover .aboutdropdown-content {
-    display: block;
-} */ 
-
         #clock {
             pointer-events: none;
             position: absolute;
@@ -179,30 +158,6 @@ SOFTWARE. -->
             color: #16d0e4;
             font-size: 14px;
             font-weight: bold;
-        }
-
-        
-
-        .keyword {
-            color: #FF6347;
-            font-weight: bold;
-        }
-
-        .variable {
-            color: #7FFF00;
-        }
-
-        .function {
-            color: #1E90FF;
-        }
-
-        .comment {
-            color: #808080;
-            font-style: italic;
-        }
-
-        .string {
-            color: #FFD700;
         }
 
         .context-menu {
@@ -240,11 +195,13 @@ SOFTWARE. -->
                     <a href="#" id="newFile">New File</a>
                     <a href="#" id="saveFile">Save</a>
                 </div>
-                <!-- <span>About</span>
-                <div class="aboutdropdown-content">
+            </div>
+            <div class="dropdown">
+                <span>About</span>
+                <div class="dropdown-content">
                     <a href="#" id="License" onclick="license()">License</a>
                     <a href="#" id="Credits" onclick="credits()">Credits</a>
-                </div> -->
+                </div>
             </div>
         </div>
         <div id="editor"></div>
@@ -260,164 +217,9 @@ SOFTWARE. -->
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js"></script>
-    <script>
-        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs' } });
+<script src="js/main.js"></script>
+<script src="js/about_dropdown.js"></script>
 
-require(['vs/editor/editor.main'], function () {
-    monaco.languages.register({ id: 'sigmag' });
-
-    monaco.editor.defineTheme('sigmagTheme', {
-        base: 'vs-dark',
-        inherit: true,
-        rules: [
-            { token: 'keyword', foreground: 'FF6347' },
-            { token: 'variable', foreground: '7FFF00' },
-            { token: 'function', foreground: '1E90FF' },
-            { token: 'command', foreground: 'FF1493' },
-            { token: 'string', foreground: 'FFD700' },
-            { token: 'number', foreground: '32CD32' },
-            { token: 'operator', foreground: 'D2691E' },
-        ],
-        colors: {
-            'editor.background': '#193333'
-        }
-    });
-
-    monaco.languages.setMonarchTokensProvider('sigmag', {
-        tokenizer: {
-            root: [
-                [/gregPr|gregMa|gregIn|gregWRITE|gregRUN|gregType|gregRandom|gregPrintAll|gregBeep/, 'command'],
-                [/[a-zA-Z_][a-zA-Z0-9_]*/, 'variable'],
-                [/".*?"/, 'string'],
-                [/\d+/, 'number'],
-                [/[+\-*/=<>!]/, 'operator'],
-            ]
-        }
-    });
-
-    const editor = monaco.editor.create(document.getElementById('editor'), {
-        language: 'sigmag',
-        theme: 'sigmagTheme',
-        automaticLayout: true
-    });
-
-    const fileList = document.querySelector('#file-list');
-    const files = JSON.parse(localStorage.getItem('openFiles')) || {};
-
-    const loadFile = (fileName) => {
-        editor.setValue(files[fileName] || '');
-        highlightFile(fileName);
-    };
-
-    const highlightFile = (fileName) => {
-        [...fileList.children].forEach(li => li.classList.remove('active'));
-        document.querySelector(`[data-file="${fileName}"]`)?.classList.add('active');
-    };
-
-    const saveFiles = () => {
-        localStorage.setItem('openFiles', JSON.stringify(files));
-    };
-
-    const createFileItem = (fileName) => {
-        const listItem = document.createElement('li');
-        listItem.textContent = fileName;
-        listItem.dataset.file = fileName;
-        listItem.onclick = () => loadFile(fileName);
-        listItem.oncontextmenu = (e) => {
-            e.preventDefault();
-            const contextMenu = document.getElementById('contextMenu');
-            contextMenu.style.top = `${e.clientY}px`;
-            contextMenu.style.left = `${e.clientX}px`;
-            contextMenu.style.display = 'block';
-
-            document.getElementById('renameFile').onclick = () => {
-                const newName = prompt('Enter new file name:', fileName);
-                if (newName && !files[newName]) {
-                    files[newName] = files[fileName];
-                    delete files[fileName];
-                    listItem.textContent = newName;
-                    listItem.dataset.file = newName;
-                    saveFiles();
-                }
-            };
-
-            document.getElementById('deleteFile').onclick = () => {
-                if (confirm(`Are you sure you want to delete ${fileName}?`)) {
-                    delete files[fileName];
-                    fileList.removeChild(listItem);
-                    saveFiles();
-                    document.querySelector('#editor').classList.add('welcome-screen');
-                    document.getElementById('contextMenu').style.display = 'none';
-                }
-            };
-
-            document.getElementById('downloadFile').onclick = () => {
-                const blob = new Blob([files[fileName]], { type: 'text/plain' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName;
-                link.click();
-                document.getElementById('contextMenu').style.display = 'none';
-            };
-        };
-
-        return listItem;
-    };
-
-    if (Object.keys(files).length === 0) {
-        editor.setValue('Welcome to SigmaGreg Code!!!\nThe best way to write SigmaGreg code.\n\nTo get started, press the \'File\' button and then \'New File\'!\n\n\n2024-2025 Freakybob-Team. Licenced under MIT, with help from VS Code.');
-        document.querySelector('#editor').classList.add('welcome-screen');
-    }
-
-    Object.keys(files).forEach(fileName => {
-        fileList.appendChild(createFileItem(fileName));
-    });
-
-    document.getElementById('newFile').onclick = () => {
-        const newFileName = prompt('Enter file name:', 'new.sgc');
-        if (newFileName && !files[newFileName]) {
-            files[newFileName] = '';
-            const newFileItem = createFileItem(newFileName);
-            fileList.appendChild(newFileItem);
-            loadFile(newFileName);
-            saveFiles();
-        }
-    };
-
-    document.querySelector('#saveFile').addEventListener('click', () => {
-        const activeFile = [...fileList.children].find(li => li.classList.contains('active'))?.dataset.file;
-        if (activeFile) {
-            files[activeFile] = editor.getValue();
-            saveFiles();
-            alert(`Saved ${activeFile}!`);
-        } else {
-            alert('No file selected to save...');
-        }
-    });
-
-    document.getElementById('menu-bar').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('menu-bar')) {
-            document.getElementById('contextMenu').style.display = 'none';
-        }
-    });
-
-    document.body.addEventListener('click', () => {
-        document.getElementById('contextMenu').style.display = 'none';
-    });
-
-    let seconds = 0;
-    function updateStopwatch() {
-        seconds++;
-        const hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
-        const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-        const secs = (seconds % 60).toString().padStart(2, '0');
-        document.getElementById('clock').textContent = `${hrs}:${mins}:${secs}`;
-    }
-
-    setInterval(updateStopwatch, 1000);
-    updateStopwatch();
-});
-    </script>
-    <script src="js/about_dropdown.js"></script>
+    
 </body>
 </html>

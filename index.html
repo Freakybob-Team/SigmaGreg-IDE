@@ -389,7 +389,7 @@ require(['vs/editor/editor.main'], function () {
         if (activeFile) {
             files[activeFile] = editor.getValue();
             saveFiles();
-            alert('Saved ${filename}?!');
+            alert(`Saved ${activeFile}?!`);
         } else {
             alert('No file selected to save...');
         }

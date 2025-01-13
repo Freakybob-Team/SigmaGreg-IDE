@@ -219,7 +219,10 @@ SOFTWARE. -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js"></script>
 <script src="js/main.js"></script>
 <script src="js/about_dropdown.js"></script>
-
-    
+<script>
+    if (typeof navigator.serviceWorker !== 'undefined') {
+      navigator.serviceWorker.register('js/sw.js')
+    }
+</script>  
 </body>
 </html>

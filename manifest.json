@@ -3,6 +3,8 @@
   "name": "SigmaGreg IDE",
   "theme_color": "#000000",
   "background_color": "#000000",
+  "orientation": "any",
+  "display": "standalone",
   "short_name": "SG IDE",
   "id": "site.freakybob.sgc",
   "description": "SigmaGreg IDE by the Freakybob Team!",

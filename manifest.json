@@ -1,14 +1,15 @@
 {
+  "lang": "en-us",
   "name": "SigmaGreg IDE",
   "theme_color": "#000000",
   "background_color": "#000000",
   "short_name": "SG IDE",
   "id": "site.freakybob.sgc",
   "description": "SigmaGreg IDE by the Freakybob Team!",
+  "start_url": "/",
   "categories": [
     "productivity"
   ],
-  "start_url": "https://sgc.freakybob.site",
     "icons": [
       {
         "src": "windows11/SmallTile.scale-100.png",

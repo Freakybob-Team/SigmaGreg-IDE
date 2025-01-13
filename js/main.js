@@ -7,27 +7,35 @@ require(['vs/editor/editor.main'], function () {
         base: 'vs-dark',
         inherit: true,
         rules: [
-            { token: 'keyword', foreground: 'FF6347' },
-            { token: 'variable', foreground: '7FFF00' },
-            { token: 'function', foreground: '1E90FF' },
-            { token: 'command', foreground: 'FF1493' },
-            { token: 'string', foreground: 'FFD700' },
-            { token: 'number', foreground: '32CD32' },
-            { token: 'operator', foreground: 'D2691E' },
+            { token: 'keyword', foreground: '#FF6347' },
+            { token: 'variable', foreground: '#00C8FF' },
+            { token: 'command', foreground: '#FF1493' },
+            { token: 'string', foreground: '#FFD700' }, 
+            { token: 'number', foreground: '#7BFB0C' }, 
+            { token: 'operator', foreground: '#E99A62' },
+            { token: 'if', foreground: '#EA91E4' }, 
+            { token: 'then', foreground: '#803D93' },
+            { token: 'else', foreground: '#DF89E4' },
+            { token: 'comment', foreground: '#AF96B7' },
         ],
         colors: {
-            'editor.background': '#193333'
+            'editor.background': '#36042EA9'
         }
     });
 
     monaco.languages.setMonarchTokensProvider('sigmag', {
         tokenizer: {
             root: [
-                [/gregPr|gregMa|gregIn|gregWRITE|gregRUN|gregType|gregRandom|gregPrintAll|gregBeep/, 'command'],
+                [/gregPr|gregMa|gregIn|gregType|gregRandom|gregPrintAll|gregBeep|gregSleep/, 'command'],
+                [/\bif\b/, 'if'],
+                [/\bthen\b/, 'then'],
+                [/\belse\b/, 'else'],
                 [/[a-zA-Z_][a-zA-Z0-9_]*/, 'variable'],
                 [/".*?"/, 'string'],
-                [/\d+/, 'number'],
-                [/[+\-*/=<>!]/, 'operator'],
+                [/\d+/, 'number'], 
+                [/[+\-*/=<>!]/, 'operator'], 
+                [/\`.*$/, 'comment'], 
+                [/\s+/, 'text'],
             ]
         }
     });
@@ -102,7 +110,7 @@ require(['vs/editor/editor.main'], function () {
     };
 
     if (Object.keys(files).length === 0) {
-        editor.setValue('Welcome to SigmaGreg Code!!!\nThe best way to write SigmaGreg code.\n\nTo get started, press the \'File\' button and then \'New File\'!\n\n\n2024-2025 Freakybob-Team. Licenced under MIT, with help from VS Code.');
+        editor.setValue('` Welcome to SigmaGreg Code!!!\n` The best way to write SigmaGreg code.\n\n` To get started, press the \'File\' button and then \'New File\'!\n\n\n` 2024-2025 Freakybob-Team. Licenced under MIT, with help from VS Code.');
         document.querySelector('#editor').classList.add('welcome-screen');
     }
 

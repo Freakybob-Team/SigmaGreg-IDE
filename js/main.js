@@ -26,7 +26,7 @@ require(['vs/editor/editor.main'], function () {
     monaco.languages.setMonarchTokensProvider('sigmag', {
         tokenizer: {
             root: [
-                [/gregPr|gregMa|gregIn|gregType|gregRandom|gregPrintAll|gregBeep|gregSleep/, 'command'],
+                [/gregPr|gregMa|gregIn|gregType|gregRandom|gregPrintAll|gregBeep|gregSleep|gregCurTime/, 'command'],
                 [/\bif\b/, 'if'],
                 [/\bthen\b/, 'then'],
                 [/\belse\b/, 'else'],

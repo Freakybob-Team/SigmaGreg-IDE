@@ -10,13 +10,14 @@ require(['vs/editor/editor.main'], function () {
             { token: 'keyword', foreground: '#FF6347' },
             { token: 'variable', foreground: '#00C8FF' },
             { token: 'command', foreground: '#FF1493' },
-            { token: 'string', foreground: '#FFD700' }, 
-            { token: 'number', foreground: '#7BFB0C' }, 
+            { token: 'string', foreground: '#FFD700' },
+            { token: 'number', foreground: '#7BFB0C' },
             { token: 'operator', foreground: '#E99A62' },
-            { token: 'if', foreground: '#EA91E4' }, 
+            { token: 'if', foreground: '#EA91E4' },
             { token: 'then', foreground: '#803D93' },
             { token: 'else', foreground: '#DF89E4' },
             { token: 'comment', foreground: '#AF96B7' },
+            { token: 'include', foreground: '#FF0B03' }
         ],
         colors: {
             'editor.background': '#36042EA9'
@@ -26,16 +27,17 @@ require(['vs/editor/editor.main'], function () {
     monaco.languages.setMonarchTokensProvider('sigmag', {
         tokenizer: {
             root: [
-                [/gregPr|gregMa|gregIn|gregType|gregRandom|gregPrintAll|gregBeep|gregSleep|gregCurDateTime|gregClear|gregCurTime|gregCurDate/, 'command'],
+                [/\b(gregCurDateTime|gregCurDate|gregPrintAll)\b/, 'command'],
+                [/gregPr|gregMa|gregIn|gregType|gregRandom|gregBeep|gregSleep|gregClear|gregCurTime|exit|imclude/, 'keyword'],
+                [/\binclude\b/i, 'include'],
                 [/\bif\b/, 'if'],
                 [/\bthen\b/, 'then'],
                 [/\belse\b/, 'else'],
                 [/[a-zA-Z_][a-zA-Z0-9_]*/, 'variable'],
-                [/".*?"/, 'string'],
+                [/"(.*?)"/, 'string'],
                 [/\d+/, 'number'], 
                 [/[+\-*/=<>!]/, 'operator'], 
                 [/\`.*$/, 'comment'], 
-                [/\s+/, 'text'],
             ]
         }
     });
@@ -52,6 +54,7 @@ require(['vs/editor/editor.main'], function () {
     const loadFile = (fileName) => {
         editor.setValue(files[fileName] || '');
         highlightFile(fileName);
+        localStorage.setItem('lastFile', fileName);  
     };
 
     const highlightFile = (fileName) => {
@@ -91,7 +94,13 @@ require(['vs/editor/editor.main'], function () {
                     delete files[fileName];
                     fileList.removeChild(listItem);
                     saveFiles();
-                    document.querySelector('#editor').classList.add('welcome-screen');
+                    const remainingFiles = Object.keys(files);
+                    if (remainingFiles.length === 0) {
+                        editor.setValue('` Welcome to SigmaGreg Code!!!\n` The best way to write SigmaGreg code.\n\n` To get started, press the \'File\' button and then \'New File\'!\n\n\n` 2024-2025 Freakybob-Team. Licenced under MIT, with help from VS Code.');
+                        document.querySelector('#editor').classList.add('welcome-screen');
+                    } else {
+                        loadFile(remainingFiles[0]);
+                    }
                     document.getElementById('contextMenu').style.display = 'none';
                 }
             };
@@ -161,4 +170,44 @@ require(['vs/editor/editor.main'], function () {
 
     setInterval(updateStopwatch, 1000);
     updateStopwatch();
+
+    editor.onDidChangeCursorPosition(e => {
+        const position = editor.getPosition();
+        document.querySelector('#status-bar span').textContent = `Ln ${position.lineNumber}, Col ${position.column}`;
+    });
+
+    const lastFile = localStorage.getItem('lastFile');
+    if (lastFile && files[lastFile]) {
+        loadFile(lastFile);
+    } else {
+        const firstFile = Object.keys(files)[0];
+        if (firstFile) {
+            loadFile(firstFile);
+        }
+    }
+    document.body.addEventListener('click', () => {
+        document.getElementById('contextMenu').style.display = 'none';
+    });
+
+    document.getElementById('openFile').addEventListener('click', () => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.sgc';
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const fileName = file.name;
+                    files[fileName] = e.target.result;
+                    const newFileItem = createFileItem(fileName);
+                    fileList.appendChild(newFileItem);
+                    loadFile(fileName);
+                    saveFiles();
+                };
+                reader.readAsText(file);
+            }
+        });
+        fileInput.click();
+    });
 });

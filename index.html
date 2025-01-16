@@ -39,147 +39,161 @@ SOFTWARE. -->
     <link rel="manifest" href="/manifest.json">
     <style>
         body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            background-color: #0f1010;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        }
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #0f1010;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    transition: background-color 0.5s ease-in-out;
+}
 
-        #sidebar {
-            width: 200px;
-            background-color: #371141;
-            color: #16d0e4;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid #00e1ff;
-        }
+#sidebar {
+    width: 200px;
+    background-color: #371141;
+    color: #16d0e4;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #00e1ff;
+    transition: background-color 0.5s ease-in-out;
+}
 
-        #sidebar h3 {
-            margin: 0;
-            padding: 10px;
-            background-color: #114c7a86;
-            font-size: 16px;
-            text-align: center;
-        }
+#sidebar h3 {
+    margin: 0;
+    padding: 10px;
+    background-color: #114c7a86;
+    font-size: 16px;
+    text-align: center;
+    transition: background-color 0.5s ease-in-out;
+}
 
-        #sidebar ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            flex-grow: 1;
-        }
+#sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
 
-        #sidebar ul li {
-            padding: 10px;
-            cursor: pointer;
-        }
+#sidebar ul li {
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
 
-        #sidebar ul li:hover {
-            background-color: #65065d;
-        }
+#sidebar ul li:hover {
+    background-color: #65065d;
+}
 
-        #menu-bar {
-            height: 30px;
-            background-color: #3fb1b375;
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            color: #fff;
-            flex-shrink: 0;
-        }
+#menu-bar {
+    height: 30px;
+    background-color: #3fb1b375;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    color: #fff;
+    flex-shrink: 0;
+    transition: background-color 0.5s ease-in-out;
+}
 
-        #menu-bar span {
-            margin-right: 15px;
-            cursor: pointer;
-        }
+#menu-bar span {
+    margin-right: 15px;
+    cursor: pointer;
+}
 
-        #editor-container {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            overflow: hidden;
-            position: relative;
-        }
+#editor-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+    position: relative;
+}
 
-        #editor {
-            flex-grow: 1;
-        }
+#editor {
+    flex-grow: 1;
+}
 
-        #status-bar {
-            height: 24px;
-            background-color: #26a74263;
-            color: #d4d4d4;
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            justify-content: space-between;
-        }
+#status-bar {
+    height: 24px;
+    background-color: #26a74263;
+    color: #d4d4d4;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    justify-content: space-between;
+}
 
-        #status-bar span {
-            font-size: 12px;
-        }
+#status-bar span {
+    font-size: 12px;
+}
 
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
 
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #371141;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-            z-index: 1;
-        }
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #371141;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
 
-        .dropdown-content a {
-            color: #16d0e4;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-        }
+.dropdown-content a {
+    color: #16d0e4;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.2s ease-in-out;
+}
 
-        .dropdown-content a:hover {
-            background-color: #65065d;
-        }
+.dropdown-content a:hover {
+    background-color: #65065d;
+}
 
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
+.dropdown:hover .dropdown-content {
+    display: block;
+}
 
-        #clock {
-            pointer-events: none;
-            position: absolute;
-            top: 4px;
-            right: 20px;
-            color: #16d0e4;
-            font-size: 14px;
-            font-weight: bold;
-        }
+#clock {
+    pointer-events: none;
+    position: absolute;
+    top: 4px;
+    right: 20px;
+    color: #16d0e4;
+    font-size: 14px;
+    font-weight: bold;
+}
 
-        .context-menu {
-            position: absolute;
-            background-color: #371141;
-            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-            z-index: 1;
-            display: none;
-            min-width: 160px;
-        }
+.context-menu {
+    position: absolute;
+    background-color: #371141;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    display: none;
+    min-width: 160px;
+    transition: all 0.2s ease-in-out;
+}
 
-        .context-menu a {
-            color: #16d0e4;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-        }
+.context-menu a {
+    color: #16d0e4;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    transition: all 0.2s ease-in-out;
+}
 
-        .context-menu a:hover {
-            background-color: #65065d;
-        }
+.context-menu a:hover {
+    background-color: #65065d;
+}
+
+#file-list .active {
+    background-color: #085545;
+    color: white;
+}
+
     </style>
 </head>
 <body>
@@ -193,6 +207,7 @@ SOFTWARE. -->
             <div class="dropdown">
                 <span>File</span>
                 <div class="dropdown-content">
+                    <a href="#" id="openFile">Open File</a>
                     <a href="#" id="newFile">New File</a>
                     <a href="#" id="saveFile">Save</a>
                 </div>

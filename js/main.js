@@ -28,7 +28,7 @@ require(['vs/editor/editor.main'], function () {
         tokenizer: {
             root: [
                 [/\b(gregCurDateTime|gregCurDate|gregPrintAll)\b/, 'command'],
-                [/gregPr|gregMa|gregIn|gregType|gregRandom|gregBeep|gregSleep|gregClear|gregCurTime|exit|imclude/, 'keyword'],
+                [/gregPr|gregMa|gregIn|gregType|gregRandom|gregBeep|gregSleep|gregClear|gregCurTime|exit|gregExit|gregQuit|gregLeave|imclude/, 'keyword'],
                 [/\binclude\b/i, 'include'],
                 [/\bif\b/, 'if'],
                 [/\bthen\b/, 'then'],

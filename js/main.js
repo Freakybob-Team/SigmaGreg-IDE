@@ -1,5 +1,6 @@
 require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs' } });
 
+
 require(['vs/editor/editor.main'], function () {
     monaco.languages.register({ id: 'sigmag' });
 
@@ -7,9 +8,11 @@ require(['vs/editor/editor.main'], function () {
         base: 'vs-dark',
         inherit: true,
         rules: [
-            { token: 'keyword', foreground: '#FF6347' },
+            { token: 'keyword', foreground: '#FF1493' },
             { token: 'variable', foreground: '#00C8FF' },
             { token: 'command', foreground: '#FF1493' },
+            { token: 'command.crossed', foreground: '#FF0000', fontStyle: 'strikethrough' },
+            { token: 'keyword.crossed', foreground: '#FF0000', fontStyle: 'strikethrough' },
             { token: 'string', foreground: '#FFD700' },
             { token: 'number', foreground: '#7BFB0C' },
             { token: 'operator', foreground: '#E99A62' },
@@ -17,7 +20,8 @@ require(['vs/editor/editor.main'], function () {
             { token: 'then', foreground: '#803D93' },
             { token: 'else', foreground: '#DF89E4' },
             { token: 'comment', foreground: '#AF96B7' },
-            { token: 'include', foreground: '#FF0B03' }
+            { token: 'include', foreground: '#FF0B03' },
+            { token: 'define', foreground: '#4F6BD1' },
         ],
         colors: {
             'editor.background': '#36042EA9'
@@ -27,17 +31,29 @@ require(['vs/editor/editor.main'], function () {
     monaco.languages.setMonarchTokensProvider('sigmag', {
         tokenizer: {
             root: [
+                [/#GREGDEFINE/, { token: 'define', next: '@defineMode' }],
                 [/\b(gregCurDateTime|gregCurDate|gregPrintAll)\b/, 'command'],
-                [/gregPr|gregMa|gregIn|gregType|gregRandom|gregBeep|gregSleep|gregClear|gregCurTime|exit|gregExit|gregQuit|gregLeave|imclude/, 'keyword'],
+                [/gregPr|gregIn|gregType|gregRandom|gregBeep|gregSleep|gregClear|gregCurTime|exit|gregExit|gregQuit|gregLeave/, 'keyword'],
                 [/\binclude\b/i, 'include'],
                 [/\bif\b/, 'if'],
                 [/\bthen\b/, 'then'],
                 [/\belse\b/, 'else'],
                 [/[a-zA-Z_][a-zA-Z0-9_]*/, 'variable'],
                 [/"(.*?)"/, 'string'],
-                [/\d+/, 'number'], 
-                [/[+\-*/=<>!]/, 'operator'], 
-                [/\`.*$/, 'comment'], 
+                [/\d+/, 'number'],
+                [/[+\-*/=<>!]/, 'operator'],
+                [/\`.*$/, 'comment']
+            ],
+            defineMode: [
+                [/\b(gregCurDateTime|gregCurDate|gregPrintAll)\b/, 'command.crossed'],
+                [/gregPr|gregIn|gregType|gregRandom|gregBeep|gregSleep|gregClear|gregCurTime|exit|gregExit|gregQuit|gregLeave/, 'keyword.crossed'],
+                [/[a-zA-Z_][a-zA-Z0-9_]*/, 'variable'],
+                [/"(.*?)"/, 'string'],
+                [/\d+/, 'number'],
+                [/[+\-*/=<>!]/, 'operator'],
+                [/\`.*$/, 'comment'],
+                [/^#GREGDEFINE/, 'command.crossed']
+
             ]
         }
     });
@@ -47,7 +63,114 @@ require(['vs/editor/editor.main'], function () {
         theme: 'sigmagTheme',
         automaticLayout: true
     });
+    
+    document.getElementById('errorCheckerClose').addEventListener('click', function() {
+        document.getElementById('errorCheckerModal').style.display = 'none';
+    });
+    
+    function showErrorCheckerModal() {
+        document.getElementById('errorCheckerModal').style.display = 'flex';
+        document.getElementById('loadingCircle').style.display = 'inline-block';
+        document.getElementById('errorCheckerMessage').textContent = 'Checking for errors...';
+    
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += 5;
+            
+    
+            if (progress >= 50) {
+                document.getElementById('errorCheckerMessage').textContent = 'Almost done...';
+            }
+            if (progress >= 100) {
+                document.getElementById('errorCheckerMessage').textContent = 'Done!'
+            }
+        }, 200);
 
+    
+        setTimeout(() => {
+            const code = editor.getValue();
+            const errors = checkSyntax(code);
+            document.getElementById('loadingCircle').style.display = 'none';
+    
+            clearInterval(progressInterval);
+    
+            if (errors.length === 0) {
+                document.getElementById('errorCheckerMessage').textContent = 'No errors found!!!!!! :3333333';
+            } else {
+                document.getElementById('errorCheckerMessage').innerHTML = 'Uh oh.. Errors:<br>' + errors.join('<br>');
+            }
+        }, 6000);
+    }
+    
+    
+    function checkSyntax(code) {
+        const errors = [];
+        const lines = code.split('\n');
+        const validKeywords = [
+            'gregPr', 'gregIn', 'gregType', 'gregRandom',
+            'gregBeep', 'gregSleep', 'gregClear', 'gregCurTime',
+            'exit', 'gregExit', 'gregQuit', 'gregLeave', 'include',
+            'if', 'then', 'else', '#GREGDEFINE'
+        ];
+        const validCommands = ['gregCurDateTime', 'gregCurDate', 'gregPrintAll'];
+        const declaredVariables = new Set();
+    
+        lines.forEach((line, index) => {
+            const codeLine = line.split('`')[0].trim();
+            if (!codeLine) return;
+    
+            const words = codeLine.split(/\s+/);
+    
+
+            if (words.some(word => word.startsWith('"') && !word.endsWith('"'))) {
+                errors.push(`Line ${index + 1}: Unclosed quotes detected dumbass`);
+            }
+    
+            words.forEach((word, wordIndex) => {
+
+                if (word.endsWith(':') && validKeywords.includes(word.slice(0, -1))) {
+                    return;
+                }
+    
+
+                if (word.startsWith('"') && word.endsWith('"')) {
+                    return;
+                }
+    
+
+                if (word === "=" && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(words[wordIndex - 1])) {
+                    declaredVariables.add(words[wordIndex - 1]);
+                }
+    
+
+                if (['gregPr', 'gregIn'].includes(word)) {
+                    const arg = words[wordIndex + 1];
+                    if (!arg || (!(arg.startsWith('"') || declaredVariables.has(arg)))) {
+                        errors.push(`Line ${index + 1}: Invalid argument for '${word}' sob`);
+                    }
+                }
+    
+                if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(word) && !validKeywords.includes(word) && !validCommands.includes(word)) {
+                    return;
+                }
+
+                if (
+                    !validKeywords.includes(word) &&
+                    !validCommands.includes(word) &&
+                    /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(word)
+                ) {
+                    errors.push(`Line ${index + 1}: Unknown keyword or command '${word}' lmfao`);
+                }
+            });
+        });
+    
+        return errors;
+    }
+    
+    document.getElementById('errorChecker').addEventListener('click', showErrorCheckerModal);
+    
+    
+    
     const fileList = document.querySelector('#file-list');
     const files = JSON.parse(localStorage.getItem('openFiles')) || {};
 
@@ -211,3 +334,5 @@ require(['vs/editor/editor.main'], function () {
         fileInput.click();
     });
 });
+
+

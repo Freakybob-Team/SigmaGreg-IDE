@@ -304,7 +304,6 @@ document.getElementById('deleteFile').onclick = () => {
 
     return listItem;
 };
-
 document.getElementById('newFile').onclick = () => {
     const newFileModal = document.getElementById('newFileModal');
     newFileModal.style.display = 'flex';
@@ -318,19 +317,23 @@ document.getElementById('newFile').onclick = () => {
     };
 
     document.getElementById('createNewFile').onclick = () => {
-        const newFileName = newFileNameInput.value;
-        if (!newFileName) {
-            newFileMessage.textContent = 'File name cannot be empty!';
-        } else if (files[newFileName]) {
-            newFileMessage.textContent = 'File already exists!';
-        } else {
-            files[newFileName] = '';
-            const newFileItem = createFileItem(newFileName);
-            fileList.appendChild(newFileItem);
-            loadFile(newFileName);
-            saveFiles();
-            newFileModal.style.display = 'none';
-            resetModal();
+        try {
+            const newFileName = newFileNameInput.value;
+            if (!newFileName) {
+                newFileMessage.textContent = 'File name cannot be empty!';
+            } else if (files[newFileName]) {
+                newFileMessage.textContent = 'File already exists!';
+            } else {
+                files[newFileName] = '';
+                const newFileItem = createFileItem(newFileName);
+                fileList.appendChild(newFileItem);
+                loadFile(newFileName);
+                saveFiles();
+                newFileModal.style.display = 'none';
+                resetModal();
+            }
+        } catch (e) {
+            newFileMessage.textContent = 'An error occurred...';
         }
     };
 

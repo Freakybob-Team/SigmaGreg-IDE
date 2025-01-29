@@ -189,57 +189,172 @@ require(['vs/editor/editor.main'], function () {
         localStorage.setItem('openFiles', JSON.stringify(files));
     };
 
+    const saveInterval = setInterval(() => {
+        if (Object.keys(files).length > 0) {
+            const activeFile = [...fileList.children].find(li => li.classList.contains('active'))?.dataset.file;
+            if (activeFile) {
+                files[activeFile] = editor.getValue();
+                saveFiles();
+            }
+        }
+    }, 1000);
     const createFileItem = (fileName) => {
-        const listItem = document.createElement('li');
-        listItem.textContent = fileName;
-        listItem.dataset.file = fileName;
-        listItem.onclick = () => loadFile(fileName);
-        listItem.oncontextmenu = (e) => {
-            e.preventDefault();
-            const contextMenu = document.getElementById('contextMenu');
-            contextMenu.style.top = `${e.clientY}px`;
-            contextMenu.style.left = `${e.clientX}px`;
-            contextMenu.style.display = 'block';
+    const listItem = document.createElement('li');
+    listItem.textContent = fileName;
+    listItem.dataset.file = fileName;
+    listItem.onclick = () => loadFile(fileName);
+    listItem.oncontextmenu = (e) => {
+        e.preventDefault();
+        const contextMenu = document.getElementById('contextMenu');
+        contextMenu.style.top = `${e.clientY}px`;
+        contextMenu.style.left = `${e.clientX}px`;
+        contextMenu.style.display = 'block';
 
-            document.getElementById('renameFile').onclick = () => {
-                const newName = prompt('Enter new file name:', fileName);
-                if (newName && !files[newName]) {
+        document.getElementById('renameFile').onclick = () => {
+            const renameModal = document.getElementById('renameFileModal');
+            renameModal.style.display = 'flex';
+            const renameInput = document.getElementById('renameFileName');
+            const renameMessage = document.getElementById('renameFileMessage');
+            renameInput.value = fileName;
+            renameModal.style.justifyContent = 'center';
+            renameModal.style.alignItems = 'center';
+
+            const resetModal = () => {
+                renameMessage.textContent = '';
+                renameInput.value = '';
+            };
+
+
+            const closeModal = () => {
+                renameModal.style.display = 'none';
+                resetModal();
+            };
+
+            document.getElementById('renameFileButton').onclick = () => {
+                const newName = renameInput.value;
+                if (newName && newName !== fileName && !files[newName]) {
+                    closeModal();
                     files[newName] = files[fileName];
                     delete files[fileName];
                     listItem.textContent = newName;
                     listItem.dataset.file = newName;
                     saveFiles();
+                    saveFileContent(newName, files[newName]);
+                } else if (newName && files[newName]) {
+                    renameMessage.textContent = 'File already exists';
+                } else if (!newName) {
+                    renameMessage.textContent = 'File name cannot be empty!';
+                } else if (newName === fileName) {
+                    renameMessage.textContent = 'File name cannot be the same as the current file name!';
                 }
             };
 
-            document.getElementById('deleteFile').onclick = () => {
-                if (confirm(`Are you sure you want to delete ${fileName}?`)) {
-                    delete files[fileName];
-                    fileList.removeChild(listItem);
-                    saveFiles();
-                    const remainingFiles = Object.keys(files);
-                    if (remainingFiles.length === 0) {
-                        editor.setValue('` Welcome to SigmaGreg Code!!!\n` The best way to write SigmaGreg code.\n\n` To get started, press the \'File\' button and then \'New File\'!\n\n\n` 2024-2025 Freakybob-Team. Licenced under MIT, with help from VS Code.');
-                        document.querySelector('#editor').classList.add('welcome-screen');
-                    } else {
-                        loadFile(remainingFiles[0]);
-                    }
-                    document.getElementById('contextMenu').style.display = 'none';
-                }
-            };
+            document.getElementById('closeRenameFileModal').onclick = closeModal;
 
-            document.getElementById('downloadFile').onclick = () => {
-                const blob = new Blob([files[fileName]], { type: 'text/plain' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName;
-                link.click();
-                document.getElementById('contextMenu').style.display = 'none';
-            };
+            document.getElementById('renameFileModal').addEventListener('click', (event) => {
+                if (event.target === renameModal) {
+                    closeModal();
+                }
+            });
         };
 
-        return listItem;
+document.getElementById('deleteFile').onclick = () => {
+    const deleteModal = document.getElementById('deleteFileModal');
+    const deleteMessage = document.getElementById('deleteFileMessage');
+    deleteModal.style.display = 'flex';
+    deleteModal.style.justifyContent = 'center';
+    deleteModal.style.alignItems = 'center';
+
+    const fileName = listItem.dataset.file;
+    deleteMessage.textContent = `Are you sure you want to delete ${fileName}?`;
+
+    document.getElementById('deleteFileButton').onclick = () => {
+        delete files[fileName];
+        fileList.removeChild(listItem);
+        saveFiles();
+
+        const remainingFiles = Object.keys(files);
+        if (remainingFiles.length === 0) {
+            editor.setValue(
+                "` Welcome to SigmaGreg Code!!!\n` The best way to write SigmaGreg code.\n\n` To get started, press the 'File' button and then 'New File'!\n\n\n` 2024-2025 Freakybob-Team. Licensed under MIT, with help from VS Code."
+            );
+            document.querySelector('#editor').classList.add('welcome-screen');
+        } else {
+            loadFile(remainingFiles[0]);
+        }
+        deleteModal.style.display = 'none';
     };
+
+    document.getElementById('closeDeleteFileModal').onclick = () => {
+        deleteModal.style.display = 'none';
+    };
+};
+
+
+
+        document.getElementById('downloadFile').onclick = () => {
+            const blob = new Blob([files[fileName]], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+            document.getElementById('contextMenu').style.display = 'none';
+        };
+    };
+
+    return listItem;
+};
+document.getElementById('newFile').onclick = () => {
+    const newFileModal = document.getElementById('newFileModal');
+    newFileModal.style.display = 'flex';
+    const newFileNameInput = document.getElementById('newFileName');
+    const newFileMessage = document.getElementById('newFileMessage');
+    newFileNameInput.value = 'new.sgc';
+
+    const resetModal = () => {
+        newFileMessage.textContent = '';
+        newFileNameInput.value = 'new.sgc';
+    };
+
+    document.getElementById('createNewFile').onclick = () => {
+        try {
+            const newFileName = newFileNameInput.value;
+            if (!newFileName) {
+                newFileMessage.textContent = 'File name cannot be empty!';
+            } else if (files[newFileName]) {
+                newFileMessage.textContent = 'File already exists!';
+            } else {
+                files[newFileName] = '';
+                const newFileItem = createFileItem(newFileName);
+                fileList.appendChild(newFileItem);
+                loadFile(newFileName);
+                saveFiles();
+                newFileModal.style.display = 'none';
+                resetModal();
+            }
+        } catch (e) {
+            newFileMessage.textContent = 'An error occurred...';
+        }
+    };
+
+    document.getElementById('closeNewFileModal').onclick = () => {
+        newFileModal.style.display = 'none';
+        resetModal();
+    };
+};
+
+
+   
+
+    document.querySelector('#saveFile').addEventListener('click', () => {
+        const activeFile = [...fileList.children].find(li => li.classList.contains('active'))?.dataset.file;
+        if (activeFile) {
+            files[activeFile] = editor.getValue();
+            saveFiles();
+        } else {
+            alert('No file selected to save...');
+        }
+    });
 
     if (Object.keys(files).length === 0) {
         editor.setValue('` Welcome to SigmaGreg Code!!!\n` The best way to write SigmaGreg code.\n\n` To get started, press the \'File\' button and then \'New File\'!\n\n\n` 2024-2025 Freakybob-Team. Licenced under MIT, with help from VS Code.');
@@ -250,27 +365,7 @@ require(['vs/editor/editor.main'], function () {
         fileList.appendChild(createFileItem(fileName));
     });
 
-    document.getElementById('newFile').onclick = () => {
-        const newFileName = prompt('Enter file name:', 'new.sgc');
-        if (newFileName && !files[newFileName]) {
-            files[newFileName] = '';
-            const newFileItem = createFileItem(newFileName);
-            fileList.appendChild(newFileItem);
-            loadFile(newFileName);
-            saveFiles();
-        }
-    };
 
-    document.querySelector('#saveFile').addEventListener('click', () => {
-        const activeFile = [...fileList.children].find(li => li.classList.contains('active'))?.dataset.file;
-        if (activeFile) {
-            files[activeFile] = editor.getValue();
-            saveFiles();
-            alert(`Saved ${activeFile}!`);
-        } else {
-            alert('No file selected to save...');
-        }
-    });
 
     document.getElementById('menu-bar').addEventListener('click', (e) => {
         if (e.target === document.getElementById('menu-bar')) {
@@ -334,5 +429,3 @@ require(['vs/editor/editor.main'], function () {
         fileInput.click();
     });
 });
-
-

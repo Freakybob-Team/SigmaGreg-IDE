@@ -197,47 +197,132 @@ body {
 #file-list .active:hover {
     background-color: #065a5a;
 }
-
-.error-checker-modal {
+#errorCheckerModal, #newFileModal, #renameFileModal, #deleteFileModal {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 100%;
     height: 100%;
-    background-color: rgba(13 19 73 / 0.7);
+    background-color: rgba(13, 19, 73, 0.8);
     justify-content: center;
     align-items: center;
     z-index: 9999;
 }
 
-.error-checker-modal-content {
-    background-color: #371141;
+#errorCheckerModal .error-checker-modal-content,
+#newFileModal .error-checker-modal-content,
+#renameFileModal .error-checker-modal-content,
+#deleteFileModal .error-checker-modal-content {
+    background-color: #1e1e2d;
     padding: 20px;
-    border-radius: 10px;
-    text-align: center;
+    border-radius: 15px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    width: 90%;
+    max-width: 400px;
     color: #16d0e4;
-    width: 80%;
-    max-width: 500px;
+    text-align: center;
 }
 
-.error-checker-modal-content h2 {
-    font-size: 24px;
-    margin-bottom: 10px;
+#errorCheckerModal h2, 
+#newFileModal h2, 
+#renameFileModal h2,
+#deleteFileModal h2 {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 15px;
 }
 
-.error-checker-modal-content p {
+#errorCheckerModal p, 
+#newFileModal p, 
+#renameFileModal p,
+#deleteFileModal p {
     font-size: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    color: #9ca3af;
+}
+
+#errorCheckerModal input, 
+#newFileModal input, 
+#renameFileModal input,
+#deleteFileModal input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #3b3b54;
+    background-color: #2a2a3d;
+    color: #e5e7eb;
+    font-size: 14px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+
+#errorCheckerModal button, 
+#newFileModal button, 
+#renameFileModal button,
+#deleteFileModal button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease-in-out;
+    margin: 0 5px;
+}
+
+#createFileModal #createNewFile,
+#renameFileModal #renameFileButton,
+#deleteFileModal #deleteFileButton,
+#newFileModal #createNewFile,
+#newFileModal #closeNewFileModal {
+    background-color: #16d0e4;
+    color: #0f1010;
+}
+
+#renameFileModal #renameFileButton:hover,
+#newFileModal #createNewFile:hover,
+#newFileModal #closeNewFileModal:hover {
+    background-color: #14b0b2;
+}
+
+#renameFileModal #closeRenameFileModal {
+    background-color: #6b7280;
+    color: white;
+}
+
+#renameFileModal #closeRenameFileModal:hover {
+    background-color: #4b5563;
+}
+
+#deleteFileModal #deleteFileButton {
+    background-color: #16d0e4;
+    color: #0f1010;
+}
+
+#deleteFileModal #deleteFileButton:hover {
+    background-color: #14b0b2;
+}
+
+#deleteFileModal #closeDeleteFileModal {
+    background-color: #6b7280;
+    color: white;
+}
+
+#deleteFileModal #closeDeleteFileModal:hover {
+    background-color: #4b5563;
 }
 
 #loadingCircle {
     border: 4px solid transparent;
     border-top: 4px solid #16d0e4;
+    border-right: 4px solid #ff5733;
+    border-bottom: 4px solid #33ff57;
+    border-left: 4px solid #3357ff;
     border-radius: 50%;
     width: 40px;
     height: 40px;
-    animation: spin 2s cubic-bezier(0.2, 0, 0.2, 1) infinite, fadeOut 9s ease-out forwards;
+    animation: spin 1.5s linear infinite;
     margin-bottom: 15px;
     display: inline-block;
     position: relative;
@@ -246,11 +331,6 @@ body {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-}
-
-@keyframes fadeOut {
-    0% { opacity: 1; }
-    100% { opacity: 0; }
 }
 
 
@@ -267,6 +347,7 @@ body {
 #errorCheckerClose:hover {
     background-color: #14b0b2;
 }
+
     </style>
 </head>
 <body>
@@ -315,13 +396,44 @@ body {
         </div>
     </div>
     
+<div class="error-checker-modal" id="newFileModal" style="display: none;">
+    <div class="error-checker-modal-content">
+        <h2>New File</h2>
+        <p>Enter the name for the new file:</p>
+        <p id="newFileMessage"></p>
+        <input type="text" id="newFileName" placeholder="File name" style="width: 90%; padding: 10px; margin-bottom: 15px;">
+        <button id="createNewFile">Create</button>
+        <button id="closeNewFileModal">Cancel</button>
+    </div>
+</div>
+
+<div class="error-checker-modal" id="renameFileModal" style="display: none;">
+    <div class="error-checker-modal-content">
+        <h2>Rename File</h2>
+        <p>Enter the new name for the file:</p>
+        <p id="renameFileMessage"></p>
+        <input type="text" id="renameFileName" placeholder="New file name" style="width: 90%; padding: 10px; margin-bottom: 15px;">
+        <button id="renameFileButton">Rename</button>
+        <button id="closeRenameFileModal">Cancel</button>
+    </div>
+</div>
+<div class="error-checker-modal" id="deleteFileModal" style="display: none;">
+    <div class="error-checker-modal-content">
+        <h2>Delete File</h2>
+        <p id="deleteFileMessage"></p>
+        <button id="deleteFileButton">Delete</button>
+        <button id="closeDeleteFileModal">Cancel</button>
+    </div>
+</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js"></script>
-<script src="js/main.js"></script>
+
 <script src="js/about_dropdown.js"></script>
+<script src="js/main.js"></script>
 <script>
     if (typeof navigator.serviceWorker !== 'undefined') {
       navigator.serviceWorker.register('sw.js')
     }
-</script>  
+</script> 
+
 </body>
 </html>
